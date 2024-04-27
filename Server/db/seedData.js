@@ -7,6 +7,7 @@ async function dropTables() {
       DROP TABLE IF EXISTS customer;
       DROP TABLE IF EXISTS vendor;
       DROP TABLE IF EXISTS favorite;
+      DROP TABLE IF EXISTS customer_vendor_favorite;
     `)
     console.log('tables dropped!')
   } catch (error) {
@@ -20,25 +21,35 @@ async function createTables() {
     console.log('Building All Tables...');
     await client.query(`
       CREATE TABLE customer (
-        customer_id SERIAL PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         customername VARCHAR(20) UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        phone VARCHAR(255) UNIQUE
+        phone VARCHAR(20) UNIQUE
         );
 
       CREATE TABLE vendor (
-        vendor_id SERIAL PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
-        description TEXT,
+        description TEXT
         );
 
       CREATE TABLE favorite (
-        favorite_id SERIAL PRIMARY KEY,
-        customer_id SERIAL,
-        vendor_id SERIAL,
+        id SERIAL PRIMARY KEY,
+        customer_id INT REFERENCES customer(id),
+        vendor_id INT REFERENCES vendor(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        `);
+
+    CREATE TABLE customer_vendor_favorite (
+        id SERIAL PRIMARY KEY,
+        customer_id INT REFERENCES customer(id),
+        vendor_id INT REFERENCES vendor(id),
+        CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES customer(id),
+        CONSTRAINT fk_vendor FOREIGN KEY (vendor_id) REFERENCES vendor(id),
+        UNIQUE(customer_id, vendor_id)
+        ); 
+        `)
+        console.log('tables built!')
   } catch (error) {
     throw error;
   }
